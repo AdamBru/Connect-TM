@@ -23,7 +23,7 @@ node server.js
 ```
 4.  Otwórz w przeglądarce komputera i telefonu adres podany w konsoli (np.  http://192.168.x.x:8080).
 
-5.  Na komputerze wybierz  **Ekran gry**, a na telefonie  **Kontroler**.
+5.  Na komputerze wybierz  **Ekran**, a na telefonie  **Kontroler**.
     
 6.  Wpisz wyświetlony PIN na telefonie i rozpocznij zabawę! 🎮
 
