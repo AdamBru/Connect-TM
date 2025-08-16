@@ -1,0 +1,176 @@
+<!-- main/display.html -->
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connect™</title>
+<link rel="stylesheet" href="../style/target/main.min.css">
+<style>
+#game-container {
+	display: none; /* ukryta do momentu startGame */
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
+	margin-top: 2rem;
+}
+#game {
+	border: 3px solid #333;
+	border-radius: 15px;
+	background: linear-gradient(135deg, #84fab0, #8fd3f4);
+}
+#pin-display {
+	font-size: 2rem;
+	font-weight: bold;
+	color: #333;
+	background-color: #fff;
+	padding: 0.5rem 1rem;
+	border-radius: 10px;
+	box-shadow: 0 0 10px rgba(0,0,0,0.2);
+	margin-bottom: 1rem;
+}
+.pin-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	margin-top: 2rem;
+}
+#banner {
+	display: none;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background: rgba(0,0,0,0.8);
+	color: #fff;
+	padding: 2rem 3rem;
+	font-size: 2rem;
+	border-radius: 15px;
+	text-align: center;
+	z-index: 100;
+}
+#timer {
+	font-size: 1.5rem;
+	font-weight: bold;
+	margin-bottom: 1rem;
+	color: #333;
+}
+</style>
+</head>
+<body>
+
+<div class="pin-container">
+	<h1>Connect™</h1>
+	<p>Twój PIN gry:</p>
+	<div id="pin-display">Ładowanie...</div>
+</div>
+
+<div class="page-container" id="game-container" style="justify-content: start;">
+	<div class="content" style="flex: 0;">
+		<div id="timer">Czas: 0 s</div>
+		<div class="game-field">
+			<canvas id="game" width="400" height="400"></canvas>
+			<div id="score">Punkty: 0</div>
+		</div>
+	</div> 	
+</div>
+
+<div id="banner"></div>
+
+<script>
+const ws = new WebSocket(`ws://${location.hostname}:8080`);
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+let x = 200, y = 200, r = 20, score = 0;
+let startTime = null;
+let timerInterval = null;
+let moveItemsInterval = null;
+let gameStarted = false;
+
+const items = [];
+for (let i = 0; i < 5; i++) items.push({ x: Math.random() * (canvas.width - 20) + 10, y: Math.random() * (canvas.height - 20) + 10, r: 10 });
+
+function draw() {
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	ctx.beginPath();
+	ctx.arc(x, y, r, 0, Math.PI*2);
+	ctx.fillStyle = 'tomato';
+	ctx.fill();
+	items.forEach(item => {
+		ctx.beginPath();
+		ctx.arc(item.x, item.y, item.r, 0, Math.PI*2);
+		ctx.fillStyle = 'gold';
+		ctx.fill();
+	});
+}
+
+function checkCollision() {
+	for (let i = items.length - 1; i >= 0; i--) {
+		const dx = x - items[i].x, dy = y - items[i].y;
+		if (Math.sqrt(dx*dx + dy*dy) < r + items[i].r) {
+			items.splice(i, 1);
+			score++;
+			document.getElementById('score').innerText = `Punkty: ${score}`;
+			if(items.length === 0){
+				clearInterval(timerInterval);
+				clearInterval(moveItemsInterval);
+				const endTime = new Date();
+				const totalSeconds = Math.floor((endTime - startTime)/1000);
+				const banner = document.getElementById('banner');
+				banner.innerText = `Gratulacje! Zebrano wszystkie kulki!\nCzas: ${totalSeconds} sek.`;
+				banner.style.display = 'block';
+			}
+		}
+	}
+}
+
+draw();
+
+function moveItemsRandomly() {
+	items.forEach(item => {
+		item.x = Math.random() * (canvas.width - 20) + 10;
+		item.y = Math.random() * (canvas.height - 20) + 10;
+	});
+	draw();
+}
+
+ws.onmessage = (event) => {
+	const data = JSON.parse(event.data);
+	if(data.type === 'pin'){
+		document.getElementById('pin-display').innerText = data.pin;
+	}
+	if(data.type === 'startGame' && !gameStarted){
+		gameStarted = true;
+		document.getElementById('game-container').style.display = 'flex';
+		startTime = new Date();
+		timerInterval = setInterval(()=>{
+			const elapsed = Math.floor((new Date() - startTime)/1000);
+			document.getElementById('timer').innerText = `Czas: ${elapsed} s`;
+		}, 1000);
+		moveItemsInterval = setInterval(moveItemsRandomly, 3000);
+	}
+	if(data.type === 'move' && gameStarted){
+		const step = 30;
+		if (data.direction === 'left') x -= step;
+		if (data.direction === 'right') x += step;
+		if (data.direction === 'up') y -= step;
+		if (data.direction === 'down') y += step;
+
+		if (x>canvas.width) x=0;
+		if (x<0) x=canvas.width;
+		if (y>canvas.height) y=0;
+		if (y<0) y=canvas.height;
+
+		checkCollision();
+		draw();
+	}
+};
+
+ws.onopen = () => { ws.send(JSON.stringify({ type: 'registerScreen' })); };
+</script>
+
+</body>
+</html>

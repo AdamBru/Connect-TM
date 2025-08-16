@@ -1,0 +1,110 @@
+<!-- main/controller.html -->
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connect™ - Kontroler</title>
+<link rel="stylesheet" href="../style/target/main.min.css">
+<style>
+body { overflow: hidden; }
+.controller-buttons { display: none; gap: 1rem; }
+#start-btn { display: none; }
+#pin-text { display: block; font-size:1.2rem; margin-bottom:0.5rem; }
+button#join-btn, button#start-btn {
+	border-radius: 15px;
+	border: 2px solid skyblue;
+	box-shadow: 0 0 10px rgba(0,0,0,0.2);
+	cursor: pointer;
+	background-color: skyblue;
+}
+</style>
+</head>
+<body>
+
+<div class="page-container">
+    <div class="content">
+        <div id="block-content" style="display:flex; flex-direction: column; align-items: center; justify-content: center; gap:2rem;">
+            <h1>Connect™</h1>
+            <p id="pin-text">Wpisz PIN gry, aby dołączyć</p>
+            <input type="text" id="game-pin" placeholder="PIN gry" maxlength="4" style="font-size:1.5rem; padding:0.5rem 1rem; margin-bottom:1rem; text-align: center; border-radius: 25px; border: 2px solid lightgray; box-shadow: 0 0 10px rgba(0,0,0,0.2); outline: none;">
+            <button id="join-btn" style="padding:0.5rem 1.5rem; font-size:1.2rem;">Dołącz</button>
+            <button id="start-btn" style="padding:0.5rem 1.5rem; font-size:1.2rem; font-size: 150%;">Start</button>
+        </div>
+
+        <div class="controller-buttons">
+            <div class="horizontal">
+                <button id="left"></button>
+                <button id="right"></button>
+            </div>
+            <div class="vertical">
+                <button id="up"></button>
+                <button id="down"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let ws;
+const joinBtn = document.getElementById('join-btn');
+const startBtn = document.getElementById('start-btn');
+const controllerButtons = document.querySelector('.controller-buttons');
+const blockContent = document.getElementById('block-content');
+const pinText = document.getElementById('pin-text');
+
+joinBtn.onclick = () => {
+    const pin = document.getElementById('game-pin').value;
+    if(!pin) { alert('Wpisz PIN gry!'); return; }
+
+    ws = new WebSocket(`ws://${location.hostname}:8080`);
+
+    ws.onopen = () => {
+        ws.send(JSON.stringify({type:'joinGame', pin}));
+    };
+
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if(data.type==='joined' && data.success){
+            joinBtn.style.display = 'none';
+            startBtn.style.display = 'inline-block';
+            blockContent.querySelector('input').style.display = 'none';
+            // zmiana tekstu na zasady gry
+			pinText.style.textAlign = 'center';
+            pinText.innerHTML= 'Zbierz wszystkie kulki w jak najkrótszym czasie. <br> Gdy dotkniesz ściany, pojawisz się po przeciwnej stronie planszy. <br> <b>Uwaga</b>: kulki co kilka sekund zmieniają swoje położenie.';
+        } else if(data.type==='joined' && !data.success){
+            alert(data.message || 'Niepoprawny PIN!');
+        }
+
+        if(data.type === 'controllerStart'){
+            startBtn.style.display='none';
+            controllerButtons.style.display='flex';
+            pinText.style.display='none';
+        }
+    };
+};
+
+startBtn.onclick = () => {
+    if(ws && ws.readyState === WebSocket.OPEN){
+        ws.send(JSON.stringify({type:'startGame'}));
+        startBtn.style.display='none';
+        controllerButtons.style.display='flex';
+        pinText.style.display='none';
+    }
+};
+
+function sendMove(direction){
+    if(ws && ws.readyState===WebSocket.OPEN){
+        ws.send(JSON.stringify({type:'move', direction}));
+    }
+}
+
+document.getElementById('left').onclick = () => sendMove('left');
+document.getElementById('right').onclick = () => sendMove('right');
+document.getElementById('up').onclick = () => sendMove('up');
+document.getElementById('down').onclick = () => sendMove('down');
+</script>
+
+</body>
+</html>

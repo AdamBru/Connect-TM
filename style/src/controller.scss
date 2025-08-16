@@ -1,0 +1,162 @@
+.block-content {
+	display: none;
+	width: 100%;
+	min-height: 100vh;
+	background-color: #FED1BD;
+	overflow: hidden;
+	position: absolute;
+	z-index: 10;
+
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 2rem;
+
+	@media (max-width: 400px) {
+		display: flex;
+	}
+}
+
+.player-name-container {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	gap: 2rem;
+	width: 100%;
+
+	input, a{
+		font-size: 1.2rem;
+		padding: 0.5rem 1rem;
+		border: 1px solid #ccc;
+		border-radius: 15px;
+		box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+		height: 2rem;
+		background-color: #eee;
+		cursor: pointer;
+		text-decoration: none;
+		color: black;
+
+		&:focus{
+			outline: none;
+		}
+
+		&#player-color {
+			width: calc(100% + 1rem);
+			padding: 0;
+			appearance: none;
+			-webkit-appearance: none;
+
+			&::-webkit-color-swatch-wrapper {
+				padding: 5px;
+				border-radius: 15px;
+			}
+			&::-webkit-color-swatch {
+				border: none;
+				border-radius: 15px;
+			}
+			&::-moz-color-swatch {
+				border: none;
+				border-radius: 10px;
+				padding: 0.5rem; 
+				box-sizing: border-box;
+			}
+			&::-moz-focus-inner {
+				border: 0;
+			}
+		}
+
+		&#submit-player-name {
+			padding: 0 .75rem;
+			margin-left: 1rem;
+			appearance: none;
+			-webkit-appearance: none;
+			background-color: #eee;
+		}
+
+		&[type="text"] {
+			background-color: #fff;
+		}
+	}
+
+	.label-group {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: .5rem;
+	}
+
+	label {
+		font-size: 1.1rem;
+		color: #555;
+		margin-left: .5rem;
+	}
+}
+
+.controller-buttons {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	width: fit-content;
+
+	.horizontal {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		gap: 4.5rem;
+		transform: translateX(17%);
+	}
+
+	.vertical {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 5.5rem;
+		transform: translateX(-165%);
+	}
+
+	button {
+		height: 4rem;
+		width: 5rem;
+		background: url(../../img/house_arrow.png) no-repeat #eee;
+		background-size: 2rem;
+		background-position: 1rem .9rem;
+		border: 2px solid #b9b9b9;
+		border-right: none;
+		outline: none;
+		border-radius: 5rem 0 0 5rem;
+		cursor: pointer;
+		position: relative;
+
+		// tap shadow
+		transition: scale 0.2s ease-in-out;
+		touch-action: manipulation;
+		-webkit-tap-highlight-color: transparent;
+		box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+		&:active {
+			scale: 0.95;
+
+		}
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 50%;
+			right: 0;
+			transform: translate(50%, -50%) rotate(45deg);
+			background-color: #eee;
+			height: 70%;
+			aspect-ratio: 1/1;
+			border: none;
+			border-right: 2px solid #b9b9b9;
+			border-top: 2px solid #b9b9b9;
+		}
+
+		&#up {transform: rotate(90deg);}
+		&#down {transform: rotate(-90deg);}
+		&#right {transform: rotate(180deg);}
+	}
+}
