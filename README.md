@@ -2,6 +2,8 @@
 
 Prosta gra w czasie rzeczywistym (RTA), w której można sterować kulką z telefonu i grać na ekranie komputera.
 
+<img width="2480" height="1748" alt="Connect-TM-Mockup" src="https://github.com/user-attachments/assets/3820f5da-800a-4d3f-9107-667ed0858d45" />
+
 ## Zasady gry
 - Sterujesz kulką przy pomocy przycisków na telefonie.  
 - Zbieraj wszystkie złote kulki na ekranie komputera w jak najkrótszym czasie.  
