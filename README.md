@@ -36,7 +36,7 @@ Projekt dostępny na licencji MIT.
 ## 🧑‍💻 Autor
 
 *   AdamBru
-*   Vibe Coder since 2025
+*   IV 2025
 
 ---
 
